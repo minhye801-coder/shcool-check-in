@@ -3,88 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>조리원 대체인력 근무 확인서</title>
+    <title>학교 급식실 대체인력 근무 확인서</title>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background-color: #f4f7f6; }
-        .container { max-width: 500px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
-        h2 { text-align: center; color: #333; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .signature-wrapper { border: 1px solid #000; background: #fff; margin-top: 10px; position: relative; width: 100%; height: 200px; }
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; line-height: 1.6; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 500px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        input[type="text"] { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        /* 근무시간 라디오 버튼 스타일 */
+        .time-options { margin-top: 10px; display: grid; gap: 8px; }
+        .time-item { display: flex; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; cursor: pointer; }
+        .time-item input { margin-right: 10px; width: 18px; height: 18px; }
+        #etcTimeInput { margin-top: 5px; display: none; }
+
+        /* 서명 패드 스타일 */
+        .signature-group { margin-top: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 10px; background: #fff; }
+        .signature-wrapper { border: 1px solid #333; background: #fff; margin-top: 10px; width: 100%; height: 150px; border-radius: 5px; }
         canvas { width: 100%; height: 100%; touch-action: none; }
-        .btns { margin-top: 20px; display: flex; gap: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        
+        .btns { margin-top: 30px; display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
         .btn-save { background-color: #4CAF50; color: white; }
-        .btn-clear { background-color: #f44336; color: white; }
+        .btn-save:hover { background-color: #45a049; }
+        .btn-clear { background-color: #999; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>근무 확인서</h2>
-    <p style="font-size: 0.9em; color: #666; text-align: center;">실시간 타임스탬프가 함께 기록됩니다.</p>
+    <h2>급식실 근무 확인서</h2>
     
-    <label>근무자 성명</label>
+    <label>1. 근무자 성명</label>
     <input type="text" id="userName" placeholder="성함을 입력하세요">
 
-    <label>근무 시간 (예: 08:30~16:30)</label>
-    <input type="text" id="workTime" placeholder="근무 시간을 입력하세요">
+    <label>2. 근무 시간 선택</label>
+    <div class="time-options">
+        <label class="time-item"><input type="radio" name="workTime" value="07:30~15:30" onclick="toggleEtc(false)"> 07:30 ~ 15:30</label>
+        <label class="time-item"><input type="radio" name="workTime" value="08:00~16:00" onclick="toggleEtc(false)"> 08:00 ~ 16:00</label>
+        <label class="time-item"><input type="radio" name="workTime" value="08:30~16:30" onclick="toggleEtc(false)"> 08:30 ~ 16:30</label>
+        <label class="time-item"><input type="radio" name="workTime" value="etc" id="etcRadio" onclick="toggleEtc(true)"> 기타 (직접 입력)</label>
+        <input type="text" id="etcTimeInput" placeholder="근무 시간을 입력하세요 (예: 09:00~13:00)">
+    </div>
 
-    <label>현장 확인자 (조리사 성함)</label>
-    <input type="text" id="adminName" placeholder="확인자 성함을 입력하세요">
+    <div class="signature-group">
+        <label>3. 근무자 서명</label>
+        <div class="signature-wrapper">
+            <canvas id="user-pad"></canvas>
+        </div>
+        <button type="button" class="btn-clear" style="padding:5px; margin-top:5px; font-size:12px;" onclick="userPad.clear()">서명 지우기</button>
+    </div>
 
-    <label>근무자 서명</label>
-    <div class="signature-wrapper">
-        <canvas id="signature-pad"></canvas>
+    <div class="signature-group" style="background-color: #e8f5e9;">
+        <label>4. 현장 확인자 (조리사 서명)</label>
+        <div class="signature-wrapper">
+            <canvas id="admin-pad"></canvas>
+        </div>
+        <button type="button" class="btn-clear" style="padding:5px; margin-top:5px; font-size:12px;" onclick="adminPad.clear()">서명 지우기</button>
     </div>
     
     <div class="btns">
-        <button class="btn-clear" onclick="clearPad()">지우기</button>
-        <button class="btn-save" onclick="saveData()">제출하기</button>
+        <button class="btn-save" onclick="saveData()">확인 및 제출하기</button>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById('signature-pad');
-    const signaturePad = new SignaturePad(canvas);
+    // 서명 패드 2개 설정
+    const userCanvas = document.getElementById('user-pad');
+    const adminCanvas = document.getElementById('admin-pad');
+    const userPad = new SignaturePad(userCanvas);
+    const adminPad = new SignaturePad(adminCanvas);
 
-    // 화면 크기에 맞게 캔버스 조정
     function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        signaturePad.clear();
+        [userCanvas, adminCanvas].forEach(canvas => {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+        });
+        userPad.clear();
+        adminPad.clear();
     }
     window.onresize = resizeCanvas;
-    resizeCanvas();
+    window.onload = resizeCanvas;
 
-    function clearPad() {
-        signaturePad.clear();
+    function toggleEtc(show) {
+        document.getElementById('etcTimeInput').style.display = show ? 'block' : 'none';
     }
 
-    function saveData() {
-        if (signaturePad.isEmpty()) {
-            alert("서명을 해주세요.");
+    async function saveData() {
+        const name = document.getElementById('userName').value;
+        const selectedTime = document.querySelector('input[name="workTime"]:checked');
+        let workTime = selectedTime ? selectedTime.value : "";
+        
+        if(workTime === "etc") {
+            workTime = document.getElementById('etcTimeInput').value;
+        }
+
+        if (!name || !workTime || userPad.isEmpty() || adminPad.isEmpty()) {
+            alert("성명, 시간 선택, 그리고 양측 서명을 모두 완료해주세요.");
             return;
         }
 
         const data = {
-            name: document.getElementById('userName').value,
-            time: document.getElementById('workTime').value,
-            admin: document.getElementById('adminName').value,
-            signature: signaturePad.toDataURL(), // 서명을 이미지 데이터로 변환
+            name: name,
+            time: workTime,
+            userSig: userPad.toDataURL(),
+            adminSig: adminPad.toDataURL(),
             timestamp: new Date().toLocaleString()
         };
 
-        console.log("저장될 데이터:", data);
-        
-        // 이 부분에 서버 전송 코드를 넣거나, 
-        // 간단하게 결과창을 띄워 담당자님께 보여주는 식으로 활용 가능합니다.
-        alert(data.name + "님, 제출 완료되었습니다.\n시간: " + data.timestamp);
-        
-        // 팁: 여기서 캡처해서 보관하거나 서버(구글 시트 등)로 쏘면 됩니다.
+        const URL = "여기에_구글_배포_URL_붙여넣기"; // <--- 반드시 수정하세요!
+
+        const btn = document.querySelector('.btn-save');
+        btn.innerText = "전송 중...";
+        btn.disabled = true;
+
+        try {
+            await fetch(URL, { method: "POST", mode: "no-cors", body: JSON.stringify(data) });
+            alert("제출되었습니다. 오늘도 고생 많으셨습니다!");
+            location.reload();
+        } catch (e) {
+            alert("오류 발생! 다시 시도해주세요.");
+            btn.disabled = false;
+            btn.innerText = "확인 및 제출하기";
+        }
     }
 </script>
 

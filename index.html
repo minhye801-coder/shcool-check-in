@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조리원 대체인력 근무 확인서</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background-color: #f4f7f6; }
+        .container { max-width: 500px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .signature-wrapper { border: 1px solid #000; background: #fff; margin-top: 10px; position: relative; width: 100%; height: 200px; }
+        canvas { width: 100%; height: 100%; touch-action: none; }
+        .btns { margin-top: 20px; display: flex; gap: 10px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .btn-save { background-color: #4CAF50; color: white; }
+        .btn-clear { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>근무 확인서</h2>
+    <p style="font-size: 0.9em; color: #666; text-align: center;">실시간 타임스탬프가 함께 기록됩니다.</p>
+    
+    <label>근무자 성명</label>
+    <input type="text" id="userName" placeholder="성함을 입력하세요">
+
+    <label>근무 시간 (예: 08:30~16:30)</label>
+    <input type="text" id="workTime" placeholder="근무 시간을 입력하세요">
+
+    <label>현장 확인자 (조리사 성함)</label>
+    <input type="text" id="adminName" placeholder="확인자 성함을 입력하세요">
+
+    <label>근무자 서명</label>
+    <div class="signature-wrapper">
+        <canvas id="signature-pad"></canvas>
+    </div>
+    
+    <div class="btns">
+        <button class="btn-clear" onclick="clearPad()">지우기</button>
+        <button class="btn-save" onclick="saveData()">제출하기</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas);
+
+    // 화면 크기에 맞게 캔버스 조정
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+    }
+    window.onresize = resizeCanvas;
+    resizeCanvas();
+
+    function clearPad() {
+        signaturePad.clear();
+    }
+
+    function saveData() {
+        if (signaturePad.isEmpty()) {
+            alert("서명을 해주세요.");
+            return;
+        }
+
+        const data = {
+            name: document.getElementById('userName').value,
+            time: document.getElementById('workTime').value,
+            admin: document.getElementById('adminName').value,
+            signature: signaturePad.toDataURL(), // 서명을 이미지 데이터로 변환
+            timestamp: new Date().toLocaleString()
+        };
+
+        console.log("저장될 데이터:", data);
+        
+        // 이 부분에 서버 전송 코드를 넣거나, 
+        // 간단하게 결과창을 띄워 담당자님께 보여주는 식으로 활용 가능합니다.
+        alert(data.name + "님, 제출 완료되었습니다.\n시간: " + data.timestamp);
+        
+        // 팁: 여기서 캡처해서 보관하거나 서버(구글 시트 등)로 쏘면 됩니다.
+    }
+</script>
+
+</body>
+</html>

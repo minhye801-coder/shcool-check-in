@@ -20,7 +20,6 @@
         .signature-group { margin-top: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 10px; background: #fff; }
         .signature-wrapper { border: 1px solid #333; background: #fff; margin-top: 10px; width: 100%; height: 150px; border-radius: 5px; position: relative; overflow: hidden; }
         
-        /* 터치 간섭 완전 차단 */
         canvas { position: absolute; left: 0; top: 0; width: 100% !important; height: 100% !important; touch-action: none; }
         
         .btns { margin-top: 30px; display: flex; gap: 10px; }
@@ -42,6 +41,7 @@
         <label class="time-item"><input type="radio" name="workTime" value="07:30~15:30" onclick="toggleEtc(false)"> 07:30 ~ 15:30</label>
         <label class="time-item"><input type="radio" name="workTime" value="08:00~16:00" onclick="toggleEtc(false)"> 08:00 ~ 16:00</label>
         <label class="time-item"><input type="radio" name="workTime" value="08:30~16:30" onclick="toggleEtc(false)"> 08:30 ~ 16:30</label>
+        <label class="time-item"><input type="radio" name="workTime" value="학교급식봉사(4시간)" onclick="toggleEtc(false)"> 학교급식봉사(4시간)</label>
         <label class="time-item"><input type="radio" name="workTime" value="etc" id="etcRadio" onclick="toggleEtc(true)"> 기타 (직접 입력)</label>
         <input type="text" id="etcTimeInput" placeholder="근무 시간을 입력하세요">
     </div>
@@ -71,7 +71,6 @@
     const userCanvas = document.getElementById('user-pad');
     const adminCanvas = document.getElementById('admin-pad');
     
-    // 캔버스 크기 초기화 함수 (단순화)
     function initCanvas(canvas) {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -79,7 +78,6 @@
         canvas.getContext("2d").scale(ratio, ratio);
     }
 
-    // 초기 설정
     initCanvas(userCanvas);
     initCanvas(adminCanvas);
 
@@ -99,8 +97,9 @@
             workTime = document.getElementById('etcTimeInput').value;
         }
 
-        if (!name || !workTime || userPad.isEmpty() || adminPad.isEmpty()) {
-            alert("성명, 시간 선택, 그리고 양측 서명을 모두 완료해주세요.");
+        // 이름과 근무 시간만 필수 체크 (서명 체크 제외)
+        if (!name || !workTime) {
+            alert("성명과 근무 시간을 모두 입력해주세요.");
             return;
         }
 
@@ -111,8 +110,8 @@
         const data = {
             name: name,
             time: workTime,
-            userSig: userPad.toDataURL(),
-            adminSig: adminPad.toDataURL(),
+            userSig: userPad.isEmpty() ? "" : userPad.toDataURL(),
+            adminSig: adminPad.isEmpty() ? "" : adminPad.toDataURL(),
             timestamp: new Date().toLocaleString()
         };
 

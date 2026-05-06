@@ -63,7 +63,7 @@
     </div>
     
     <div class="btns">
-        <button class="btn-save" onclick="saveData()">확인 및 제출하기</button>
+        <button class="btn-save" id="saveBtn" onclick="saveData()">확인 및 제출하기</button>
     </div>
 </div>
 
@@ -102,38 +102,39 @@
             return;
         }
 
-        const btn = document.querySelector('.btn-save');
+        const btn = document.getElementById('saveBtn');
         btn.innerText = "전송 중...";
         btn.disabled = true;
 
-        // 서명이 비어있으면 "(서명 없음)" 텍스트를 보냄
-        const userData = userPad.isEmpty() ? "(서명 없음)" : userPad.toDataURL();
-        const adminData = adminPad.isEmpty() ? "(서명 없음)" : adminPad.toDataURL();
+        // 서명 데이터 처리: 비어있으면 공백 대신 명확한 텍스트 전달
+        const userSigData = userPad.isEmpty() ? "No Signature" : userPad.toDataURL();
+        const adminSigData = adminPad.isEmpty() ? "No Signature" : adminPad.toDataURL();
 
         const data = {
             name: name,
             time: workTime,
-            userSig: userData,
-            adminSig: adminData,
+            userSig: userSigData,
+            adminSig: adminSigData,
             timestamp: new Date().toLocaleString()
         };
 
         const URL = "https://script.google.com/macros/s/AKfycbyVZea_oDErLE9X5FxI5er8ES82GLUh6YNNNVurpx2Gh0sF4a8zKMg9UQ370TVZmMD8/exec";
 
-        try {
-            await fetch(URL, { 
-                method: "POST", 
-                mode: "no-cors", 
-                headers: { "Content-Type": "text/plain" }, 
-                body: JSON.stringify(data) 
-            });
+        // 전송 방식을 더 안전하게 변경
+        fetch(URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify(data)
+        }).then(() => {
             alert("제출되었습니다. 오늘도 잘 부탁드립니다!");
             location.reload();
-        } catch (e) {
+        }).catch((e) => {
+            console.error(e);
             alert("오류 발생! 다시 시도해주세요.");
             btn.disabled = false;
             btn.innerText = "확인 및 제출하기";
-        }
+        });
     }
 </script>
 
